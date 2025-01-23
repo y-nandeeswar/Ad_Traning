@@ -1,0 +1,36 @@
+import pandas as pd
+import numpy as np
+from sklearn.impute import SimpleImputer
+
+
+data = {
+    'square_feet_area': [8500, 9600, np.nan, 11250, np.nan, 9550, 14260, np.nan, 13830, 11500],
+    'Year_built': [2003, 1978, 2001, np.nan, 1998, 200, 2006, 1978, 1950, np.nan],
+    'over_all_condition': [5, 6, 7, 3, np.nan, 7, 8, 6, np.nan, 7],
+    'ready_to_move': ['Yes', 'No', 'No', np.nan, 'No', np.nan, 'Yes', 'Yes', 'No', 'Yes'],
+    'sale_price': [200000, 180000, 215000, 250000, 180000, 2300000, 2250000, 240000, np.nan, 220000]
+}
+
+df = pd.DataFrame(data)
+
+print("Original DataFrame:")
+print(df)
+print("\nMissing values before imputation:")
+print(df.isnull().sum())
+
+imputer = SimpleImputer(strategy='mean')
+
+
+numeric_columns = df.select_dtypes(include=[np.number]).columns
+df[numeric_columns] = imputer.fit_transform(df[numeric_columns])
+
+
+imputer_cat = SimpleImputer(strategy='most_frequent')
+
+df['ready_to_move'] = imputer_cat.fit_transform(df[['ready_to_move']]).ravel()
+
+print("\nDataFrame after filling missing values:")
+print(df)
+
+print("\nMissing values after imputation:")
+print(df.isnull().sum())
