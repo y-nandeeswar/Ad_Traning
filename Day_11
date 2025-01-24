@@ -1,0 +1,44 @@
+import pandas as pd
+
+data = {
+    'Date': ['2023-01-19', '2023-01-16', '2023-01-10', '2023-01-18', '2023-01-14', 
+             '2023-01-06', '2023-01-04', '2023-01-09', '2023-01-20', '2023-01-11',
+             '2023-01-13', '2023-01-08', '2023-01-15', '2023-01-05', '2023-01-01',
+             '2023-01-03', '2023-01-02', '2023-01-07', '2023-01-12', '2023-01-17'],
+    'Account_Type': ['Fixed Deposit', 'Current', 'Current', 'Savings', 'Recurring Deposit',
+                     'Current', 'Recurring Deposit', 'Current', 'Recurring Deposit', 'Fixed Deposit',
+                     'Recurring Deposit', 'Fixed Deposit', 'Fixed Deposit', 'Fixed Deposit', 
+                     'Recurring Deposit', 'Savings', 'Fixed Deposit', 'Current', 'Recurring Deposit'],
+    'Branch': ['Central', 'Uptown', 'Uptown', 'Uptown', 'Suburban', 'Suburban', 'Central', 'Central',
+               'Downtown', 'Downtown', 'Central', 'Suburban', 'Uptown', 'Suburban', 'Central', 
+               'Suburban', 'Downtown', 'Central', 'Suburban'],
+    'Transaction_Type': ['Loan Payment', 'Withdrawal', 'Loan Payment', 'Loan Payment', 'Loan Payment',
+                          'Service Charge', 'Service Charge', 'Loan Payment', 'Service Charge', 'Deposit',
+                          'Deposit', 'Service Charge', 'Service Charge', 'Service Charge', 'Loan Payment',
+                          'Service Charge', 'Withdrawal', 'Deposit', 'Service Charge'],
+    'Transaction_Amount': [985.51, 641.43, 3363.85, 1914.6, 2788.57, 4584.05, 1621.82, 2346.72, 3899.98,
+                           1529.59, 846.41, 1803.88, 1225.5, 4683.64, 4136.54, 3350.32, 4421.57, 4116.52, 1339.57,
+                           4516.52],
+    'Account_Balance': [6839.59, 8908.39, 12428.67, 5776.63, 4779.04, 7635.47, 6465.79, 10708.85, 12646.56,
+                        2592.16, 6443.14, 6560.58, 4224.47, 6762.43, 8175.08, 12836.51, 8330.4, 9785.64, 8666.74,
+                        8789.19]
+}
+
+
+max_len = max(len(value) for value in data.values())
+
+
+for key in data:
+    if len(data[key]) < max_len:
+        data[key] += [None] * (max_len - len(data[key])) 
+
+
+df = pd.DataFrame(data)
+
+sorted_df = df.sort_values(by='Account_Balance', ascending=False)
+print("Top 10 rows sorted by Account Balance:")
+print(sorted_df.head(10))
+
+df['Transaction_Rank'] = df.groupby('Branch')['Transaction_Amount'].rank(ascending=False, method='min')
+print("\nData with Transaction Rank:")
+print(df)
