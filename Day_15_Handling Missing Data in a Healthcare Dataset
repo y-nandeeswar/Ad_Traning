@@ -1,0 +1,133 @@
+# Importing required libraries
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.impute import KNNImputer
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error
+
+# Load the dataset (replace 'your_file.csv' with the actual path)
+# Load the dataset with the full file path
+data = pd.read_csv('/Day_15_Healthcare_Data(1).csv')
+
+# Dataset Exploration (EDA)
+# Displaying first few rows
+print("First 5 rows of the dataset:")
+print(data.head())
+
+# Info about the dataset, including data types and missing values
+print("\nData Info:")
+print(data.info())
+
+# Summary statistics for numerical columns
+print("\nSummary Statistics:")
+print(data.describe())
+
+# Checking for missing values
+print("\nMissing Data Summary:")
+missing_data = data.isna().sum()
+missing_percentage = (missing_data / len(data)) * 100
+print(missing_data)
+print("\nPercentage of Missing Data:")
+print(missing_percentage)
+
+# Visualizing the missing data with a heatmap
+plt.figure(figsize=(10, 7))
+sns.heatmap(data.isna(), cbar=False, cmap='viridis')
+plt.title("Missing Data Heatmap")
+plt.show()
+
+# Imputation - Filling missing values
+
+## Mean/Median/Mode Imputation for Numerical Columns
+# Filling missing 'Age' with the median value
+data['Age'] = data['Age'].fillna(data['Age'].median())
+
+# Filling missing 'Blood_Pressure' with the median value
+data['Blood_Pressure'] = data['Blood_Pressure'].fillna(data['Blood_Pressure'].median())
+
+# Filling missing 'Cholesterol' with the median value
+data['Cholesterol'] = data['Cholesterol'].fillna(data['Cholesterol'].median())
+
+# Filling missing 'Heart_Disease' with the mode value (since it's categorical)
+data['Heart_Disease'] = data['Heart_Disease'].fillna(data['Heart_Disease'].mode()[0])
+
+# Filling missing 'Gender' with the mode value
+data['Gender'] = data['Gender'].fillna(data['Gender'].mode()[0])
+
+# Filling missing 'Diabetes' with the mode value
+data['Diabetes'] = data['Diabetes'].fillna(data['Diabetes'].mode()[0])
+
+# After Mean/Median/Mode Imputation, check missing data again
+print("\nMissing Data After Imputation:")
+missing_data_after = data.isna().sum()
+print(missing_data_after)
+
+# K-Nearest Neighbors (KNN) Imputation
+knn_imputer = KNNImputer(n_neighbors=5)
+data_knn_imputed = pd.DataFrame(knn_imputer.fit_transform(data.select_dtypes(include=[np.number])), columns=data.select_dtypes(include=[np.number]).columns)
+
+# Replace the imputed values in the original dataset
+data[data_knn_imputed.columns] = data_knn_imputed
+
+# After KNN Imputation, check missing data again
+print("\nMissing Data After KNN Imputation:")
+missing_data_after_knn = data.isna().sum()
+print(missing_data_after_knn)
+
+# Regression Imputation (for numerical columns where missing data can be predicted)
+# Example: Using Linear Regression to predict 'Blood_Pressure' from 'Age' and 'Cholesterol'
+train_data = data[data['Blood_Pressure'].notna()]
+X_train = train_data[['Age', 'Cholesterol']]  # Features
+y_train = train_data['Blood_Pressure']  # Target
+
+# Train the linear regression model
+regressor = LinearRegression()
+regressor.fit(X_train, y_train)
+
+# Predict missing values
+missing_data = data[data['Blood_Pressure'].isna()]
+X_missing = missing_data[['Age', 'Cholesterol']]
+predicted_values = regressor.predict(X_missing)
+
+# Impute the missing 'Blood_Pressure' values with predictions
+data.loc[data['Blood_Pressure'].isna(), 'Blood_Pressure'] = predicted_values
+
+# After Regression Imputation, check missing data again
+print("\nMissing Data After Regression Imputation:")
+missing_data_after_regression = data.isna().sum()
+print(missing_data_after_regression)
+
+# Evaluating the effect of imputation
+# Before and After Statistics for 'Blood_Pressure'
+before_imputation = pd.read_csv('healthcare_data.csv')
+print("\nStatistical Summary Before Imputation for Blood_Pressure:")
+print(before_imputation['Blood_Pressure'].describe())
+
+print("\nStatistical Summary After Imputation for Blood_Pressure:")
+print(data['Blood_Pressure'].describe())
+
+# Visualization (Boxplot or Histogram) to compare distributions before and after imputation
+plt.figure(figsize=(12, 6))
+plt.subplot(1, 2, 1)
+sns.boxplot(data=before_imputation, x='Blood_Pressure')
+plt.title("Before Imputation - Blood Pressure")
+
+plt.subplot(1, 2, 2)
+sns.boxplot(data=data, x='Blood_Pressure')
+plt.title("After Imputation - Blood Pressure")
+
+plt.show()
+
+# You can also use histograms for further comparison
+plt.figure(figsize=(12, 6))
+plt.subplot(1, 2, 1)
+sns.histplot(before_imputation['Blood_Pressure'], kde=True)
+plt.title("Before Imputation - Blood Pressure")
+
+plt.subplot(1, 2, 2)
+sns.histplot(data['Blood_Pressure'], kde=True)
+plt.title("After Imputation - Blood Pressure")
+
+plt.show()
